@@ -25,6 +25,17 @@ int create_uinput() {
     ioctl(fd, UI_SET_KEYBIT, KEY_UP);
     ioctl(fd, UI_SET_KEYBIT, KEY_DOWN);
     ioctl(fd, UI_SET_KEYBIT, KEY_LEFT);
+    ioctl(fd, UI_SET_KEYBIT, KEY_RIGHT);
+    ioctl(fd, UI_SET_KEYBIT, KEY_ESC);
+    ioctl(fd, UI_SET_KEYBIT, KEY_SPACE);
+    ioctl(fd, UI_SET_KEYBIT, KEY_E);
+    ioctl(fd, UI_SET_KEYBIT, KEY_1);
+    ioctl(fd, UI_SET_KEYBIT, KEY_2);
+    ioctl(fd, UI_SET_KEYBIT, KEY_3);
+    ioctl(fd, UI_SET_KEYBIT, KEY_4);
+    ioctl(fd, UI_SET_KEYBIT, KEY_5);
+    ioctl(fd, UI_SET_KEYBIT, KEY_6);
+    ioctl(fd, UI_SET_KEYBIT, KEY_7);
 
     struct uinput_setup usetup;
     memset(&usetup, 0, sizeof(usetup));
@@ -64,6 +75,16 @@ int map_key(uint8_t key) {
         case 'D': return KEY_DOWN;
         case 'R': return KEY_RIGHT;
         case 'L': return KEY_LEFT;
+        case 27: return KEY_ESC;
+        case ' ': return KEY_SPACE;
+        case 'e': return KEY_E;
+        case '1': return KEY_1;
+        case '2': return KEY_2;
+        case '3': return KEY_3;
+        case '4': return KEY_4;
+        case '5': return KEY_5;
+        case '6': return KEY_6;
+        case '7': return KEY_7;
         default: return -1;
     }
 }
