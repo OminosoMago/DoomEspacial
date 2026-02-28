@@ -410,8 +410,33 @@ bool D_GrabMouseCallback(void)
 
 
 #define PORT 6000
+int D_SOCKET_connect(char *ip_addr) {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);   // TCP
 
-int D_SOCKET_connect(char * ip_addr){
+    struct sockaddr_in addr = {};
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(PORT);
+    inet_pton(AF_INET, ip_addr, &addr.sin_addr);
+
+    // Conectar el socket TCP (conexión real)
+    if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        perror("connect");
+        return -1;
+    }
+
+    // Redirigir stdout al socket TCP
+    dup2(sock, STDOUT_FILENO);
+
+    // IMPORTANTE: NO cierres el socket aquí.
+    // Si lo cierras, stdout queda apuntando a un descriptor inválido.
+    // close(sock);
+
+    printf("Conexion establecida por TCP\n");
+
+    return 0;
+}
+
+/*int D_SOCKET_connect(char * ip_addr){
     struct header { 
         uint32_t total_len;
     };
@@ -434,6 +459,7 @@ int D_SOCKET_connect(char * ip_addr){
 
     return 0;	
 }
+*/
 
 void D_DoomLoop (void)
 {
