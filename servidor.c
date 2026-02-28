@@ -75,7 +75,7 @@ int map_key(uint8_t key) {
         case 'D': return KEY_DOWN;
         case 'R': return KEY_RIGHT;
         case 'L': return KEY_LEFT;
-        case '\27': return KEY_ESC;
+        case 27: return KEY_ESC;
         case ' ': return KEY_SPACE;
         case 'e': return KEY_E;
         case '1': return KEY_1;
