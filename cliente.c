@@ -5,8 +5,6 @@
 #include <termios.h>
 #include <string.h>
 #include <stdint.h>
-#include <sys/select.h>
-#include <stdbool.h>
 
 typedef struct {
     uint8_t key;
@@ -35,54 +33,42 @@ int main() {
 
     printf("Enviando inputs por UDP...\n");
 
-    bool keys[256] = {0}; // mapa de estado
+    char c;
+    while (read(STDIN_FILENO, &c, 1) > 0) {
 
-    while (1) {
-        fd_set rfds;
-        struct timeval tv = {0, 50000}; // 50 ms
-        FD_ZERO(&rfds);
-        FD_SET(STDIN_FILENO, &rfds);
+        packet.pressed = 1;
 
-        int ready = select(STDIN_FILENO+1, &rfds, NULL, NULL, &tv);
+        // Detectar flechas
+        if (c == 27) {  // ESC
+            char seq[2];
 
-        if (ready > 0 && FD_ISSET(STDIN_FILENO, &rfds)) {
-            char c;
-            if (read(STDIN_FILENO, &c, 1) <= 0) continue;
+            if (read(STDIN_FILENO, &seq[0], 1) == 0) continue;
+            if (read(STDIN_FILENO, &seq[1], 1) == 0) continue;
 
-            uint8_t keycode;
-
-            // detectar flechas
-            if (c == 27) {
-                char seq[2];
-                if (read(STDIN_FILENO, &seq[0], 1) == 0) continue;
-                if (read(STDIN_FILENO, &seq[1], 1) == 0) continue;
-
-                if (seq[0] == '[') {
-                    switch (seq[1]) {
-                        case 'A': keycode = 'U'; break; // UP
-                        case 'B': keycode = 'D'; break; // DOWN
-                        case 'C': keycode = 'R'; break; // RIGHT
-                        case 'D': keycode = 'L'; break; // LEFT
-                        default: continue;
-                    }
-                } else continue;
+            if (seq[0] == '[') {
+                switch (seq[1]) {
+                    case 'A': packet.key = 'U'; break; // UP
+                    case 'B': packet.key = 'D'; break; // DOWN
+                    case 'C': packet.key = 'R'; break; // RIGHT
+                    case 'D': packet.key = 'L'; break; // LEFT
+                    default: continue;
+                }
             } else {
-                keycode = c;
+                continue;
             }
 
-            // si no estaba presionada, enviar down
-            if (!keys[keycode]) {
-                keys[keycode] = true;
-                packet.key = keycode;
-                packet.pressed = 1;
-                sendto(sock, &packet, sizeof(packet), 0,
-                       (struct sockaddr*)&server_addr, sizeof(server_addr));
-            }
+        } else {
+            packet.key = c;
         }
 
-        // cada loop revisa si alguna tecla ya no está presionada
-        // (en terminal no podemos detectar release, así que ignoramos por ahora)
-        // Esto permite que Doom interprete el movimiento continuo
+        // Enviar key down
+        sendto(sock, &packet, sizeof(packet), 0,
+               (struct sockaddr*)&server_addr, sizeof(server_addr));
+
+        // Enviar key up
+        packet.pressed = 0;
+        sendto(sock, &packet, sizeof(packet), 0,
+               (struct sockaddr*)&server_addr, sizeof(server_addr));
     }
 
     close(sock);
