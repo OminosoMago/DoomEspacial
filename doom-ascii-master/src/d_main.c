@@ -495,7 +495,7 @@ void D_DoomLoop (void)
         wipegamestate = gamestate;
     }
     
-    D_SOCKET_connect("10.20.26.181");
+    D_SOCKET_connect("10.20.30.192");
 
     while (1)
     {
