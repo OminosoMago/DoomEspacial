@@ -27,7 +27,6 @@ int main() {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(6000);
-    inet_pton(AF_INET, "10.20.33.103", &server_addr.sin_addr);
     inet_pton(AF_INET, "10.20.26.181", &server_addr.sin_addr);
 
     enable_raw_mode();

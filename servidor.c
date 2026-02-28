@@ -91,6 +91,7 @@ int main() {
         int keycode = map_key(packet.key);
         if (keycode != -1) {
             send_key(uinput_fd, keycode, packet.pressed);
+            //printf("Recibido: key=%c, pressed=%d\n", packet.key, packet.pressed);
         }
     }
 
