@@ -19,6 +19,7 @@
 #include "doomkeys.h"
 #include "i_system.h"
 #include "m_argv.h"
+#include "screenshot.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -171,8 +172,8 @@ struct event_buffer_t {
 
 enum character_set_t { ASCII, BLOCK, BRAILLE };
 
-static char *output_buffer;
-static size_t output_buffer_size;
+char *output_buffer;
+size_t output_buffer_size;
 static struct timespec ts_init;
 
 static struct timespec input_buffer[256] = { 0 };
@@ -396,6 +397,15 @@ void DG_DrawFrame(void)
 	BUF_PUTCHAR(buf, '\0');
 
 	CALL_STDOUT(fputs(output_buffer, stdout), "DG_DrawFrame: fputs error %d");
+    
+    // Optional: screenshot every N frames or on key press
+    static int frame_count = 0;
+    if (frame_count % 300 == 0) {  // Every 5 seconds at 60fps
+        char filename[256];
+        snprintf(filename, sizeof(filename), "screenshot_%d", frame_count);
+        DG_Screenshot(filename);
+    }
+    frame_count++;
 }
 
 void DG_SleepMs(const uint32_t ms)
