@@ -15,6 +15,8 @@ int main() {
 
     bind(sock, (struct sockaddr*)&addr, sizeof(addr));
 
+    printf("Servidor TCP escuchando en puerto 6000...\n");
+
     listen(sock, 5);
 
     char buffer[2048];
