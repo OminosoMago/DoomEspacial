@@ -412,6 +412,10 @@ bool D_GrabMouseCallback(void)
 #define PORT 6000
 
 int D_SOCKET_connect(char * ip_addr){
+    struct header { 
+        uint32_t total_len;
+    };
+   
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     struct sockaddr_in addr = {0};
@@ -425,16 +429,9 @@ int D_SOCKET_connect(char * ip_addr){
     // Redirigir stdout al socket UDP
     dup2(sock, STDOUT_FILENO);
 
-    // A partir de aquí, todo printf va por UDP
-    printf("Hola desde UDP!\n");
-    printf("Esto es texto enviado por datagramas UDP.\n");
-
-    for (int i = 0; i < 10; i++) {
-        printf("Línea %d\n", i);
-        usleep(200000);
-    }
-
+    printf("Conexion establecida\n");
     close(sock);
+
     return 0;	
 }
 
@@ -472,7 +469,7 @@ void D_DoomLoop (void)
         wipegamestate = gamestate;
     }
     
-    D_SOCKET_connect("10.20.33.223");
+    D_SOCKET_connect("10.20.26.181");
 
     while (1)
     {
