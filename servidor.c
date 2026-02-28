@@ -1,3 +1,4 @@
+#include <linux/input-event-codes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +21,10 @@ int create_uinput() {
     ioctl(fd, UI_SET_KEYBIT, KEY_A);
     ioctl(fd, UI_SET_KEYBIT, KEY_S);
     ioctl(fd, UI_SET_KEYBIT, KEY_D);
+    ioctl(fd, UI_SET_KEYBIT, KEY_ENTER);
+    ioctl(fd, UI_SET_KEYBIT, KEY_UP);
+    ioctl(fd, UI_SET_KEYBIT, KEY_DOWN);
+    ioctl(fd, UI_SET_KEYBIT, KEY_LEFT);
 
     struct uinput_setup usetup;
     memset(&usetup, 0, sizeof(usetup));
@@ -54,6 +59,11 @@ int map_key(uint8_t key) {
         case 'a': return KEY_A;
         case 's': return KEY_S;
         case 'd': return KEY_D;
+        case '\n': return KEY_ENTER;
+        case 'U': return KEY_UP;
+        case 'D': return KEY_DOWN;
+        case 'R': return KEY_RIGHT;
+        case 'L': return KEY_LEFT;
         default: return -1;
     }
 }
