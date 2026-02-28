@@ -1,7 +1,0 @@
-*.WAD
-.cache/
-_*/
-build/
-compile_commands.json
-doom_ascii/
-release/
