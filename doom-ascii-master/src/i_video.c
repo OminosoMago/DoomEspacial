@@ -213,7 +213,7 @@ void I_UpdateNoBlit (void)
 // I_FinishUpdate
 //
 
-void I_FinishUpdate (void)
+void I_FinishUpdate (int sock_fd)
 {
     int y;
     unsigned char *line_in, *line_out;
@@ -231,7 +231,7 @@ void I_FinishUpdate (void)
         line_in += SCREENWIDTH * fb_scaling;
     }
 
-	DG_DrawFrame();
+	DG_DrawFrame(sock_fd);
 }
 
 //
