@@ -21,11 +21,17 @@
 
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+
+#include <linux/input-event-codes.h>
+#include <linux/uinput.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 
 #include "config.h"
 #include "deh_main.h"
@@ -75,6 +81,9 @@
 #include "statdump.h"
 
 #include "d_main.h"
+
+#define PORT 6000
+#define IP "10.20.30.192"
 
 //
 // D-DoomLoop()
@@ -409,7 +418,7 @@ bool D_GrabMouseCallback(void)
 //
 
 
-#define PORT 6000
+
 int D_SOCKET_connect(char *ip_addr) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);   // TCP
 
@@ -436,30 +445,98 @@ int D_SOCKET_connect(char *ip_addr) {
     return sock;
 }
 
-/*int D_SOCKET_connect(char * ip_addr){
-    struct header { 
-        uint32_t total_len;
-    };
-   
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+// Input packet structure for UDP communication
+typedef struct {
+    uint8_t key;
+    uint8_t pressed;
+} InputPacket;
 
-    struct sockaddr_in addr = {0};
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(PORT);
-    inet_pton(AF_INET, ip_addr, &addr.sin_addr);
+// Function to create a virtual input device using uinput
+int create_uinput() {
+    int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 
-    // Conectar el socket UDP (esto fija la dirección destino)
-    connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+    ioctl(fd, UI_SET_EVBIT, EV_KEY);
+    ioctl(fd, UI_SET_KEYBIT, KEY_W);
+    ioctl(fd, UI_SET_KEYBIT, KEY_A);
+    ioctl(fd, UI_SET_KEYBIT, KEY_S);
+    ioctl(fd, UI_SET_KEYBIT, KEY_D);
+    ioctl(fd, UI_SET_KEYBIT, KEY_ENTER);
+    ioctl(fd, UI_SET_KEYBIT, KEY_UP);
+    ioctl(fd, UI_SET_KEYBIT, KEY_DOWN);
+    ioctl(fd, UI_SET_KEYBIT, KEY_LEFT);
+    ioctl(fd, UI_SET_KEYBIT, KEY_RIGHT);
+    ioctl(fd, UI_SET_KEYBIT, KEY_ESC);
+    ioctl(fd, UI_SET_KEYBIT, KEY_SPACE);
+    ioctl(fd, UI_SET_KEYBIT, KEY_E);
+    ioctl(fd, UI_SET_KEYBIT, KEY_1);
+    ioctl(fd, UI_SET_KEYBIT, KEY_2);
+    ioctl(fd, UI_SET_KEYBIT, KEY_3);
+    ioctl(fd, UI_SET_KEYBIT, KEY_4);
+    ioctl(fd, UI_SET_KEYBIT, KEY_5);
+    ioctl(fd, UI_SET_KEYBIT, KEY_6);
+    ioctl(fd, UI_SET_KEYBIT, KEY_7);
+    ioctl(fd, UI_SET_KEYBIT, KEY_COMMA);
+    ioctl(fd, UI_SET_KEYBIT, KEY_DOT);
+    ioctl(fd, UI_SET_KEYBIT, KEY_Y);
+    ioctl(fd, UI_SET_KEYBIT, KEY_N);
 
-    // Redirigir stdout al socket UDP
-    dup2(sock, STDOUT_FILENO);
+    struct uinput_setup usetup;
+    memset(&usetup, 0, sizeof(usetup));
+    usetup.id.bustype = BUS_USB;
+    strcpy(usetup.name, "doom-virtual-keyboard");
 
-    printf("Conexion establecida\n");
-    close(sock);
+    ioctl(fd, UI_DEV_SETUP, &usetup);
+    ioctl(fd, UI_DEV_CREATE);
 
-    return 0;	
+    sleep(1);
+    return fd;
 }
-*/
+
+// Function to send a key event through the virtual input device
+void send_key(int fd, int keycode, int pressed) {
+    struct input_event ev;
+
+    memset(&ev, 0, sizeof(ev));
+    ev.type = EV_KEY;
+    ev.code = keycode;
+    ev.value = pressed;
+    write(fd, &ev, sizeof(ev));
+
+    ev.type = EV_SYN;
+    ev.code = SYN_REPORT;
+    ev.value = 0;
+    write(fd, &ev, sizeof(ev));
+}
+
+// Function to map received key codes to Linux input event codes
+int map_key(uint8_t key) {
+    switch (key) {
+        case 'w': return KEY_W;
+        case 'a': return KEY_A;
+        case 's': return KEY_S;
+        case 'd': return KEY_D;
+        case '\n': return KEY_ENTER;
+        case 'U': return KEY_UP;
+        case 'D': return KEY_DOWN;
+        case 'R': return KEY_RIGHT;
+        case 'L': return KEY_LEFT;
+        case 'q': return KEY_ESC;
+        case ' ': return KEY_SPACE;
+        case 'e': return KEY_E;
+        case '1': return KEY_1;
+        case '2': return KEY_2;
+        case '3': return KEY_3;
+        case '4': return KEY_4;
+        case '5': return KEY_5;
+        case '6': return KEY_6;
+        case '7': return KEY_7;
+        case ',': return KEY_COMMA;
+        case '.': return KEY_DOT;
+        case 'y': return KEY_Y;
+        case 'n': return KEY_N;
+        default: return -1;
+    }
+}
 
 void D_DoomLoop (void)
 {
@@ -499,6 +576,19 @@ void D_DoomLoop (void)
 
     while (1)
     {
+        ssize_t n = recv(sock, &packet, sizeof(packet), MSG_DONTWAIT);
+        if (n < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No hay datos disponibles, continuar
+                usleep(1000);  // Espera 1ms
+            }
+        }
+
+        int keycode = map_key(packet.key);
+        if (keycode != -1) {
+            send_key(uinput_fd, keycode, packet.pressed);
+            //printf("Recibido: key=%c, pressed=%d\n", packet.key, packet.pressed);
+        }
 		// frame syncronous IO operations
 		I_StartFrame ();
 

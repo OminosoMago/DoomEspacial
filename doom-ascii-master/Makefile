@@ -140,4 +140,6 @@ endef
 $(eval $(call zip_rule,$(TARGETZIP),$(TARGET)))
 $(eval $(call zip_rule,$(TARGETAPPZIP),$(TARGETAPP)))
 
+$(shell mkdir -p $(CURDIR)/../_unix/game/capturas)
+
 endif

@@ -63,7 +63,7 @@ void* cliente_udp(void* arg) {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(UDP_PORT);
-    inet_pton(AF_INET, "10.20.30.192", &server_addr.sin_addr);
+    inet_pton(AF_INET, "10.20.26.181", &server_addr.sin_addr);//ip de destino
 
     enable_raw_mode();
 
