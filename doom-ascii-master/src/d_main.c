@@ -76,6 +76,9 @@
 
 #include "d_main.h"
 
+#define PORT 6000
+#define IP "10.20.30.192"
+
 //
 // D-DoomLoop()
 // Not a globally visible function,
@@ -409,7 +412,7 @@ bool D_GrabMouseCallback(void)
 //
 
 
-#define PORT 6000
+
 int D_SOCKET_connect(char *ip_addr) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);   // TCP
 
@@ -495,7 +498,7 @@ void D_DoomLoop (void)
         wipegamestate = gamestate;
     }
     
-    D_SOCKET_connect("10.20.30.192");
+    D_SOCKET_connect(IP);
 
     while (1)
     {

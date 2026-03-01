@@ -9,6 +9,7 @@
 
 #define TCP_PORT 6000
 #define UDP_PORT 6000
+#define IP "10.20.30.192"
 
 typedef struct {
     uint8_t key;
@@ -63,7 +64,7 @@ void* cliente_udp(void* arg) {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(UDP_PORT);
-    inet_pton(AF_INET, "10.20.30.192", &server_addr.sin_addr);
+    inet_pton(AF_INET, IP, &server_addr.sin_addr);
 
     enable_raw_mode();
 
