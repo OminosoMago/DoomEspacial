@@ -1,11 +1,11 @@
 # DoomEspacial
--Este repositorio cuenta con varias partes, cuenta con el codigo del supuesto ordenador que estaria en tierra y el codigo del hipotetico cubesat.
--Para correr el primero:
-    -Primero debemos modificar combinado.c y cambiar la macro de ip poniendo la ip de destino que le corresponda a el satelite.
-    -Tras esto solo debemos compilar el archivo que se encuentra en la carpeta de client_listening, y luego lo ejecutaremos.
-    -Este ejecutable sirve de dos cosas para enviar el input de teclado del ordenador y para recibir la imagen del satelite.
--Para correr el codigo del satelite:
-    -Al igual que con el codigo del cliente debemos ir a la carpeta de doom-ascii dentro de ella a la carpeta de src y alli entrar a d_main.c, aqui debemos cambiar el macro por la ip del cliente
-    -Luego debemos ir a la carpeta de doom-ascii-master y ejecutar el archivo run.sh
-    -A veces es necesario limpiar los .o, para ello debemos usar el comando make clean, y luego el make, tras esto deberia correr sin problemas.
-    -El juego lo sacamos de esta pagina de github https://github.com/wojciech-graj/doom-ascii, nosotros hemos modificado ligeramente los archivos del juego para que envie la pantalla.
+-Este repositorio cuenta con varias partes, cuenta con el codigo del supuesto ordenador que estaria en tierra y el codigo del hipotetico cubesat.  
+&nbsp;&nbsp;&nbsp;&nbsp;-Para correr el primero:  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Primero debemos modificar combinado.c y cambiar la macro de ip poniendo la ip de destino que le corresponda a el satelite.  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Tras esto solo debemos compilar el archivo que se encuentra en la carpeta de client_listening, y luego lo ejecutaremos.  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Este ejecutable sirve de dos cosas para enviar el input de teclado del ordenador y para recibir la imagen del satelite.  
+&nbsp;&nbsp;&nbsp;&nbsp;-Para correr el codigo del satelite:  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Al igual que con el codigo del cliente debemos ir a la carpeta de doom-ascii dentro de ella a la carpeta de src y alli entrar a &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d_main.c, aqui debemos cambiar el macro por la ip del cliente  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Luego debemos ir a la carpeta de doom-ascii-master y ejecutar el archivo run.sh  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-A veces es necesario limpiar los .o, para ello debemos usar el comando make clean, y luego el make, tras esto deberia correr sin &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;problemas.  
+-Los archivos del juego los sacamos de este repositorio de github https://github.com/wojciech-graj/doom-ascii, nosotros hemos modificado ligeramente los archivos del juego para que envie la pantalla.  
