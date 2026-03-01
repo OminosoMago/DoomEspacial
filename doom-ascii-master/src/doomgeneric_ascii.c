@@ -409,13 +409,16 @@ void DG_DrawFrame(int sock_fd)
 	// Get uncompressed length (null-terminated, so safe)
 	size_t uncompressed_len = strlen(output_buffer);
 
-	// Prepend uncompressed length as uint32_t (network byte order) for receiver
-	uint32_t len_net = htonl((uint32_t)uncompressed_len);
-	memcpy(compressed_buf, &len_net, 4);
+	uint32_t lenu_net = htonl((uint32_t)uncompressed_len);
+	memcpy(compressed_buf, &lenu_net, 4);
+
 
 	// Compress the ANSI payload
-	int compressed_len = LZ4_compress_default(output_buffer, compressed_buf + 4,
+	int compressed_len = LZ4_compress_default(output_buffer, compressed_buf + 8,
 						  (int)uncompressed_len, (int)max_compressed - 4);
+	// Prepend uncompressed length as uint32_t (network byte order) for receiver
+	uint32_t lenc_net = htonl((uint32_t)compressed_len);
+	memcpy(compressed_buf + 4, &lenc_net, 4);
 	if (compressed_len <= 0) {
 		// Fallback: send uncompressed (rare error)
 		uint32_t len_net_unc = htonl((uint32_t)uncompressed_len + 4);
@@ -423,11 +426,12 @@ void DG_DrawFrame(int sock_fd)
 		send(sock_fd, output_buffer, uncompressed_len, MSG_NOSIGNAL);
 	} else {
 		// Send length prefix + compressed payload
-		send(sock_fd, compressed_buf, 4 + compressed_len, MSG_NOSIGNAL);
+		send(sock_fd, compressed_buf, 8 + compressed_len, MSG_NOSIGNAL);
 	}
 
 
 //	CALL_STDOUT(fputs(output_buffer, stdout), "DG_DrawFrame: fputs error %d");
+
     
     // Optional: screenshot every N frames or on key press
     static int frame_count = 0;
