@@ -20,10 +20,12 @@
 #include "i_system.h"
 #include "m_argv.h"
 #include "screenshot.h"
+#include "lz4.h"
 
 #include <ctype.h>
 #include <errno.h>
 #include <locale.h>
+#include <netinet/in.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -173,7 +175,10 @@ struct event_buffer_t {
 enum character_set_t { ASCII, BLOCK, BRAILLE };
 
 char *output_buffer;
+char *compressed_buf;
+
 size_t output_buffer_size;
+static size_t max_compressed = 0;
 static struct timespec ts_init;
 
 static struct timespec input_buffer[256] = { 0 };
@@ -289,10 +294,14 @@ void DG_Init(void)
 		+ ((color_enabled || bold_enabled) ? 4U : 0U);
 	output_buffer = malloc(output_buffer_size);
 
+	max_compressed = LZ4_COMPRESSBOUND(output_buffer_size);
+	compressed_buf = malloc(max_compressed);
+	CALL(!compressed_buf, "DG_Init: malloc(compressed_buf) failed");
+
 	CALL(clock_gettime(CLK, &ts_init), "DG_Init: clock_gettime error %d");
 }
 
-void DG_DrawFrame(void)
+void DG_DrawFrame(int sock_fd)
 {
 	/* Clear screen if first frame */
 	static bool first_frame = true;
@@ -396,7 +405,29 @@ void DG_DrawFrame(void)
 		BUF_PUTS(buf, "\033[0m");
 	BUF_PUTCHAR(buf, '\0');
 
-	CALL_STDOUT(fputs(output_buffer, stdout), "DG_DrawFrame: fputs error %d");
+
+	// Get uncompressed length (null-terminated, so safe)
+	size_t uncompressed_len = strlen(output_buffer);
+
+	// Prepend uncompressed length as uint32_t (network byte order) for receiver
+	uint32_t len_net = htonl((uint32_t)uncompressed_len);
+	memcpy(compressed_buf, &len_net, 4);
+
+	// Compress the ANSI payload
+	int compressed_len = LZ4_compress_default(output_buffer, compressed_buf + 4,
+						  (int)uncompressed_len, (int)max_compressed - 4);
+	if (compressed_len <= 0) {
+		// Fallback: send uncompressed (rare error)
+		uint32_t len_net_unc = htonl((uint32_t)uncompressed_len + 4);
+		send(sock_fd, &len_net_unc, 4, MSG_NOSIGNAL);
+		send(sock_fd, output_buffer, uncompressed_len, MSG_NOSIGNAL);
+	} else {
+		// Send length prefix + compressed payload
+		send(sock_fd, compressed_buf, 4 + compressed_len, MSG_NOSIGNAL);
+	}
+
+
+//	CALL_STDOUT(fputs(output_buffer, stdout), "DG_DrawFrame: fputs error %d");
     
     // Optional: screenshot every N frames or on key press
     static int frame_count = 0;

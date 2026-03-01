@@ -168,7 +168,7 @@ extern  bool setsizeneeded;
 extern  int             showMessages;
 void R_ExecuteSetViewSize (void);
 
-void D_Display (void)
+void D_Display (int sock)
 {
     static  bool		viewactivestate = false;
     static  bool		menuactivestate = false;
@@ -303,7 +303,7 @@ void D_Display (void)
     // normal update
     if (!wipe)
     {
-	I_FinishUpdate ();              // page flip or blit buffer
+	I_FinishUpdate (sock);              // page flip or blit buffer
 	return;
     }
 
@@ -326,7 +326,7 @@ void D_Display (void)
 			       , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
 	I_UpdateNoBlit ();
 	M_Drawer ();                            // menu is drawn even on top of wipes
-	I_FinishUpdate ();                      // page flip or blit buffer
+	I_FinishUpdate (sock);                      // page flip or blit buffer
     } while (!done);
 }
 
@@ -425,7 +425,7 @@ int D_SOCKET_connect(char *ip_addr) {
     }
 
     // Redirigir stdout al socket TCP
-    dup2(sock, STDOUT_FILENO);
+    //dup2(sock, STDOUT_FILENO);
 
     // IMPORTANTE: NO cierres el socket aquí.
     // Si lo cierras, stdout queda apuntando a un descriptor inválido.
@@ -433,7 +433,7 @@ int D_SOCKET_connect(char *ip_addr) {
 
     printf("Conexion establecida por TCP\n");
 
-    return 0;
+    return sock;
 }
 
 /*int D_SOCKET_connect(char * ip_addr){
@@ -495,7 +495,7 @@ void D_DoomLoop (void)
         wipegamestate = gamestate;
     }
     
-    D_SOCKET_connect("10.20.26.181");
+    int sock = D_SOCKET_connect("127.0.0.1");
 
     while (1)
     {
@@ -509,7 +509,7 @@ void D_DoomLoop (void)
 		// Update display, next frame, with current state.
 		if (screenvisible)
 		{
-			D_Display ();
+			D_Display (sock);
 		}
     }
 }
