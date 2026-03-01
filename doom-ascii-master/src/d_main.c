@@ -571,12 +571,27 @@ void D_DoomLoop (void)
     {
         wipegamestate = gamestate;
     }
-    
-    int sock = D_SOCKET_connect("127.0.0.1");
+    int sock_aux;
+    struct sockaddr_in server_addr;
+    InputPacket packet;
+
+    int uinput_fd = create_uinput();
+
+    sock_aux = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(6000);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    bind(sock_aux, (struct sockaddr*)&server_addr, sizeof(server_addr));
+
+    printf("Servidor UDP escuchando en puerto 6000...\n");
+    int sock = D_SOCKET_connect(IP);
+
 
     while (1)
     {
-        ssize_t n = recv(sock, &packet, sizeof(packet), MSG_DONTWAIT);
+        ssize_t n = recv(sock_aux, &packet, sizeof(packet), MSG_DONTWAIT);
         if (n < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // No hay datos disponibles, continuar

@@ -51,5 +51,5 @@ void DG_Screenshot(const char *basename)
     writePPM(ppm_filename);
     writeASCII(txt_filename);
     
-    printf("Screenshots saved: %s, %s\n", ppm_filename, txt_filename);
+    //printf("Screenshots saved: %s, %s\n", ppm_filename, txt_filename);
 }
