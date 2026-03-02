@@ -20,7 +20,7 @@
 #include "i_system.h"
 #include "m_argv.h"
 #include "screenshot.h"
-#include "lz4.h"
+#include <lz4.h>
 
 #include <ctype.h>
 #include <errno.h>
